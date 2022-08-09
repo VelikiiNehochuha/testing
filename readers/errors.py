@@ -1,0 +1,2 @@
+class NoValidReader(Exception):
+    pass
