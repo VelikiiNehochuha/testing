@@ -2,6 +2,7 @@ import csv
 from logging import getLogger
 from enum import Enum
 from datetime import datetime
+from typing import Any, Dict
 
 from pydantic import BaseModel, validator
 from pydantic.fields import Field
@@ -43,18 +44,14 @@ class BankThreeRow(BaseModel):
         )
 
 
-class BankThreeReader:
-    def is_valid(self, path: str) -> bool:
-        with open(path) as csv_file:
-            reader = csv.DictReader(csv_file)
-            try:
-                BankThreeRow(**next(reader)).to_transaction()
-            except ValidationError as err:
-                logger.warning('Not valid reader for the file, try another one %s', err)
-                return False
-        return True
+class BankThreeAdapter:
+    def is_valid(self, row: Dict[str, Any]) -> bool:
+        try:
+            BankThreeRow(**row).to_transaction()
+            return True
+        except ValidationError as err:
+            logger.debug(err)
+        return False
 
-    def read(self, path: str) -> list[Transaction]:
-        with open(path) as csv_file:
-            reader = csv.DictReader(csv_file)
-            return [BankThreeRow(**row).to_transaction() for row in reader]
+    def transform(self, row: Dict[str, Any]) -> Transaction:
+        return BankThreeRow(**row).to_transaction()

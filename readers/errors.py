@@ -1,2 +1,2 @@
-class NoValidReader(Exception):
+class NoValidAdapter(Exception):
     pass
